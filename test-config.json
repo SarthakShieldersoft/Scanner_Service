@@ -1,0 +1,60 @@
+{
+  "testConfig": {
+    "baseUrl": "http://localhost:3000",
+    "playgroundUrl": "http://localhost:8000",
+    "timeouts": {
+      "healthCheck": 5000,
+      "scanOperation": 30000,
+      "progressCheck": 10000
+    },
+    "repositories": [
+      {
+        "name": "octocat/Hello-World",
+        "branch": "master",
+        "description": "Simple test repository"
+      },
+      {
+        "name": "microsoft/vscode",
+        "branch": "main",
+        "description": "Large TypeScript project"
+      },
+      {
+        "name": "nodejs/node",
+        "branch": "main",
+        "description": "C++ and JavaScript project"
+      }
+    ],
+    "scanTypes": ["complete", "sbom", "vulnerability"],
+    "testCases": {
+      "vulnerableCode": {
+        "sqlInjection": "const query = 'SELECT * FROM users WHERE id = ' + userId;",
+        "xss": "res.send('<h1>' + req.query.message + '</h1>');",
+        "pathTraversal": "fs.readFile('./uploads/' + filename);",
+        "commandInjection": "exec('ping ' + req.body.host);"
+      },
+      "dependencies": {
+        "outdated": {
+          "lodash": "4.17.20",
+          "moment": "2.29.1",
+          "express": "4.17.1"
+        },
+        "current": {
+          "lodash": "^4.17.21",
+          "express": "^4.18.2",
+          "axios": "^1.7.2"
+        }
+      }
+    },
+    "performance": {
+      "maxResponseTime": 5000,
+      "concurrentRequests": 10,
+      "loadTestDuration": 30000
+    },
+    "reporting": {
+      "saveToFile": true,
+      "includePassed": true,
+      "includeSkipped": true,
+      "detailedErrors": true
+    }
+  }
+}

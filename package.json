@@ -5,15 +5,27 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "test": "node test-scanner.js",
+    "test:health": "node test-scanner.js --health-only",
+    "test:repo": "node test-scanner.js --repo-only",
+    "test:legacy": "node test-scanner.js --legacy-only",
+    "test:comprehensive": "node comprehensive-test.js",
+    "test:full": "node comprehensive-test.js",
+    "test:quick": "node comprehensive-test.js --health --legacy --database",
+    "test:integration": "node comprehensive-test.js --integration",
+    "test:performance": "node comprehensive-test.js --performance"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@google/generative-ai": "^0.14.1",
+    "axios": "^1.7.2",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "pg": "^8.11.3",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"
