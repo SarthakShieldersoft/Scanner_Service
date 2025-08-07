@@ -30,13 +30,32 @@ async function analyzeSingleFile(content, file, scanType, chunkInfo = null, retr
 
         let systemPrompt = SYSTEM_INSTRUCTION;
         
-        // Customize prompt based on scan type
-        if (scanType === 'sbom') {
-            systemPrompt += '\nFocus specifically on dependency analysis, version checks, and known vulnerabilities in packages.';
-        } else if (scanType === 'vulnerability') {
-            systemPrompt += '\nFocus specifically on code-level security vulnerabilities like injection flaws, authentication issues, and logic errors.';
-        }
-
+// Customize prompt based on scan type
+if (scanType === 'sbom') {
+    systemPrompt += `
+    
+## SBOM-SPECIFIC REQUIREMENTS:
+- Generate comprehensive Software Bill of Materials
+- Include direct and transitive dependencies
+- Map each component to known vulnerabilities
+- Provide supply chain risk assessment
+- Include component licensing analysis
+- Assess dependency update impact
+- Generate vulnerability timeline for each package
+`;
+} else if (scanType === 'vulnerability') {
+    systemPrompt += `
+    
+## VULNERABILITY-SPECIFIC REQUIREMENTS:
+- Perform deep static code analysis
+- Focus on logic flaws and implementation weaknesses
+- Include data flow analysis for taint tracking
+- Provide detailed attack scenarios
+- Include proof-of-concept exploits where safe
+- Map vulnerabilities to application architecture
+- Assess cumulative risk from vulnerability chains
+`;
+}
         const chat = model.startChat({
             history: [
                 {

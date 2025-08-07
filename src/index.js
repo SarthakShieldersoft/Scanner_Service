@@ -2,6 +2,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const express = require('express');
+const cors = require('cors');
 const { initializeDatabase } = require('./database');
 
 // Import route modules
@@ -10,6 +11,16 @@ const scanRoutes = require('./routes/scan');
 const repositoryRoutes = require('./routes/repository');
 
 const app = express();
+
+// CORS configuration to allow frontend access
+const corsOptions = {
+    origin: ['http://localhost:8080', 'http://127.0.0.1:8080'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Setup routes

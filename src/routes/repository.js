@@ -100,6 +100,34 @@ router.get('/:reportId', async (req, res) => {
             return res.status(404).json({ error: 'Scan report not found.' });
         }
 
+        // Extract vulnerability counts from scan results
+        const vulnerabilityCount = {
+            Low: 0,
+            Medium: 0,
+            High: 0,
+            Critical: 0
+        };
+
+        if (report.scan_results) {
+            Object.values(report.scan_results).forEach(fileResult => {
+                if (fileResult.analysis) {
+                    const analysis = fileResult.analysis.toLowerCase();
+                    
+                    // Count occurrences of severity keywords
+                    const criticalMatches = (analysis.match(/critical|severity.*critical|critical.*severity/g) || []).length;
+                    const highMatches = (analysis.match(/high.*severity|severity.*high/g) || []).length;
+                    const mediumMatches = (analysis.match(/medium.*severity|severity.*medium/g) || []).length;
+                    const lowMatches = (analysis.match(/low.*severity|severity.*low/g) || []).length;
+
+                    // Add to counts
+                    vulnerabilityCount.Critical += criticalMatches;
+                    vulnerabilityCount.High += highMatches;
+                    vulnerabilityCount.Medium += mediumMatches;
+                    vulnerabilityCount.Low += lowMatches;
+                }
+            });
+        }
+
         res.json({
             report_id: report.report_id,
             repo_id: report.repo_id,
@@ -114,6 +142,7 @@ router.get('/:reportId', async (req, res) => {
                 processed_files: report.processed_files,
                 percentage: report.total_files > 0 ? Math.round((report.processed_files / report.total_files) * 100) : 0
             },
+            vulnerability_count: vulnerabilityCount,
             repository_info: report.repository_info,
             scan_results: report.scan_results,
             error_log: report.error_log
@@ -121,6 +150,68 @@ router.get('/:reportId', async (req, res) => {
     } catch (error) {
         console.error('Error fetching scan report:', error);
         res.status(500).json({ error: 'An error occurred while fetching the scan report.' });
+    }
+});
+
+/**
+ * Get scan report summary with vulnerability counts (Frontend-specific endpoint)
+ * GET /scan-report/:reportId/summary
+ */
+router.get('/:reportId/summary', async (req, res) => {
+    try {
+        const { reportId } = req.params;
+        const report = await ScanReportDB.getScanReport(reportId);
+        
+        if (!report) {
+            return res.status(404).json({ error: 'Scan report not found.' });
+        }
+
+        // Extract vulnerability counts from scan results
+        const vulnerabilityCount = {
+            Low: 0,
+            Medium: 0,
+            High: 0,
+            Critical: 0
+        };
+
+        if (report.scan_results) {
+            Object.values(report.scan_results).forEach(fileResult => {
+                if (fileResult.analysis) {
+                    const analysis = fileResult.analysis.toLowerCase();
+                    
+                    // Count occurrences of severity keywords
+                    const criticalMatches = (analysis.match(/critical|severity.*critical|critical.*severity/g) || []).length;
+                    const highMatches = (analysis.match(/high.*severity|severity.*high/g) || []).length;
+                    const mediumMatches = (analysis.match(/medium.*severity|severity.*medium/g) || []).length;
+                    const lowMatches = (analysis.match(/low.*severity|severity.*low/g) || []).length;
+
+                    // Add to counts (each file can contribute multiple vulnerabilities)
+                    vulnerabilityCount.Critical += criticalMatches;
+                    vulnerabilityCount.High += highMatches;
+                    vulnerabilityCount.Medium += mediumMatches;
+                    vulnerabilityCount.Low += lowMatches;
+                }
+            });
+        }
+
+        res.json({
+            report_id: report.report_id,
+            repo_id: report.repo_id,
+            repo_url: report.repo_url,
+            scan_type: report.scan_type,
+            status: report.scan_status,
+            created_at: report.created_at,
+            completed_at: report.completed_at,
+            progress: {
+                total_files: report.total_files,
+                processed_files: report.processed_files,
+                percentage: report.total_files > 0 ? Math.round((report.processed_files / report.total_files) * 100) : 0
+            },
+            vulnerability_count: vulnerabilityCount
+        });
+    } catch (error) {
+        console.error('Error fetching scan report summary:', error);
+        res.status(500).json({ error: 'An error occurred while fetching the scan report summary.' });
     }
 });
 

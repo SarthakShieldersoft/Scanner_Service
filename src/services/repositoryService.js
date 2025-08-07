@@ -41,9 +41,20 @@ async function processFilesWithRateLimit(reportId, repoId, files, scanType) {
             
             // Get file content from Playground
             const fileResponse = await axios.get(`${PLAYGROUND_BASE_URL}/file?repo_id=${repoId}&path=${encodeURIComponent(file.path)}`);
-            const content = fileResponse.data;
+            
+            // Handle different response formats from Playground service
+            let content;
+            if (typeof fileResponse.data === 'string') {
+                content = fileResponse.data;
+            } else if (fileResponse.data && typeof fileResponse.data.content === 'string') {
+                content = fileResponse.data.content;
+            } else if (fileResponse.data && fileResponse.data.data) {
+                content = typeof fileResponse.data.data === 'string' ? fileResponse.data.data : JSON.stringify(fileResponse.data.data);
+            } else {
+                content = JSON.stringify(fileResponse.data);
+            }
 
-            if (!content || content.trim().length === 0) {
+            if (!content || typeof content !== 'string' || content.trim().length === 0) {
                 results[file.path] = { error: 'Empty file or could not retrieve content' };
                 await ScanReportDB.updateFileProgress(reportId, file.path, {
                     file_status: 'failed',
